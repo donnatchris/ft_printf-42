@@ -20,11 +20,33 @@ static void	ft_putchar(char c)
 
 static void  ft_putstr(char *s)
 {
+	if (s == NULL)
+		write(1, "null", 4);
 	while (*s)
 	{
 		ft_putchar(*s);
 		s++;
 	}
+}
+
+static void	ft_putint (int n)
+{
+	int		sign;
+	size_t	i;
+
+	if (n == -2147483648)
+	{
+		write(1, "-2147483648", 11);
+		return ;
+	}
+	if (n < 0)
+	{
+		write(1, "-", 1);
+		n = -n;
+	}
+	if (n > 9)
+		ft_putint(n / 10);
+	ft_putchar((n % 10) + 48);
 }
 
 int	ft_printf(const char *str, ...)
@@ -33,7 +55,7 @@ int	ft_printf(const char *str, ...)
 	size_t	i;
 
 	va_start(ap, str);
-	i == 0;
+	i = 0;
 	while (str[i])
 	{
 		if (str[i] == '%')
@@ -41,40 +63,45 @@ int	ft_printf(const char *str, ...)
 			i++;
 			if (str[i] == 'c')
 				ft_putchar(va_arg(ap, int));
-			if (str[i]  == 's')
+			else if (str[i]  == 's')
 				ft_putstr(va_arg(ap, char *));
-		//	if (str[i + 1] == 'p')
+		//	else if (str[i + 1] == 'p')
 		//		//?
-		//	if (str[i + 1] == 'd')
+		//	else if (str[i + 1] == 'd')
 		//		ft_putnbr(va_arg(ap, int));
-		//	if (str[i + 1] == 'i')
+			else if (str[i] == 'i')
+				ft_putint(va_arg(ap, int));
+		//	else if (str[i + 1] == 'u')
 		//		//?
-		//	if (str[i + 1] == 'u')
+		//	else if (str[i + 1] == 'x')
 		//		//?
-		//	if (str[i + 1] == 'x')
+		//	else if (str[i + 1] == 'X')
 		//		//?
-		//	if (str[i + 1] == 'X')
-		//		//?
-		//	if (str[i + 1] == '%')
+		//	esle if (str[i + 1] == '%')
 		//		write(1, '%', 1);
-		//	else
-		//	{
-		//		write(2, "input error in ft_printf\n", 25);
-		//		return (0);
-		//	}
+			else
+			{
+				write(2, "input error in ft_printf\n", 25);
+				return (0);
+			}
 		}
 		else
 			ft_putchar(str[i]);
 		i++;
 	}
 	va_end(ap);
+	return (0);
 }
 
 #include <stdio.h>
 
 int	main(void)
 {
-	ft_printf("Hello %c %s World!", 'q', "lol");
+	printf("Mon printf:\n");
+	ft_printf("%i Hello %c %s World!", 42, 'q', "lol");
+	printf("\n");
+	printf("printf temoin:\n");
+	printf("%i Hello %c %s World!", 42, 'q', "lol");
 	return (0);
 }
 /*
