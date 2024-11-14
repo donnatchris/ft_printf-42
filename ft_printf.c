@@ -57,11 +57,6 @@ static void	ft_puthexamin_pf(unsigned int n)
 {
 	char	*str;
 
-	if (n == 0)
-	{
-		ft_putchar_pf('0');
-		return ;
-	}
 	str = "0123456789abcdef";
 	if (n < 0)
 	{
@@ -77,11 +72,6 @@ static void	ft_puthexamaj_pf(unsigned int n)
 {
 	char	*str;
 
-	if (n == 0)
-	{
-		ft_putchar_pf('0');
-		return ;
-	}
 	str = "0123456789ABCDEF";
 	if (n < 0)
 	{
@@ -160,14 +150,20 @@ int	main(void)
 	int	n4 = 8945;
 
 	printf("Test of my ft_printf:\n");
+	ft_printf("%d, %u, %x, %X \n", 0, 0, 0, 0);
+	printf("Witness:\n");
+	printf("%d, %u, %x, %X \n", 0, 0, 0, 0);
+	printf("\n");
+	printf("Test of my ft_printf:\n");
 	ft_printf("%d, %u, %p \n", n1, n2, &n1);
 	printf("Witness:\n");
 	printf("%d, %u, %p \n", n1, n2, &n1);
-
+	printf("\n");
 	printf("Test of my ft_printf:\n");
 	ft_printf("%p %i Hello %c %s World! %d %u %% %x %X \n", &n1, 42, 'q', "lol", n1, n2, n3, n4);
 	printf("Witness:\n");
 	printf("%p %i Hello %c %s World! %d %u %% %x %X \n", &n1, 42, 'q', "lol", n1, n2, n3, n4);
+	printf("\n");
 	return (0);
 }
 
