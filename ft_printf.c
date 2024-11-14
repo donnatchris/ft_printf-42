@@ -6,34 +6,31 @@
 /*   By: chdonnat <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 09:09:26 by chdonnat          #+#    #+#             */
-/*   Updated: 2024/11/13 11:19:27 by chdonnat         ###   ########.fr       */
+/*   Updated: 2024/11/14 10:43:34 by chdonnat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "stdarg.h"
 #include "unistd.h"
 
-static void	ft_putchar(char c)
+static void	ft_putchar_pf(char c)
 {
 	write(1, &c, 1);
 }
 
-static void  ft_putstr(char *s)
+static void  ft_putstr_pf(char *s)
 {
 	if (s == NULL)
 		write(1, "null", 4);
 	while (*s)
 	{
-		ft_putchar(*s);
+		ft_putchar_pf(*s);
 		s++;
 	}
 }
 
-static void	ft_putint (int n)
+static void	ft_putint_pf (int n)
 {
-	int		sign;
-	size_t	i;
-
 	if (n == -2147483648)
 	{
 		write(1, "-2147483648", 11);
@@ -45,8 +42,15 @@ static void	ft_putint (int n)
 		n = -n;
 	}
 	if (n > 9)
-		ft_putint(n / 10);
-	ft_putchar((n % 10) + 48);
+		ft_putint_pf(n / 10);
+	ft_putchar_pf((n % 10) + 48);
+}
+
+static void	ft_putuint_pf (unsigned int n)
+{
+	if (n > 9)
+		ft_putuint_pf(n / 10);
+	ft_putchar_pf((n % 10) + 48);
 }
 
 int	ft_printf(const char *str, ...)
@@ -62,23 +66,23 @@ int	ft_printf(const char *str, ...)
 		{
 			i++;
 			if (str[i] == 'c')
-				ft_putchar(va_arg(ap, int));
+				ft_putchar_pf(va_arg(ap, int));
 			else if (str[i]  == 's')
-				ft_putstr(va_arg(ap, char *));
+				ft_putstr_pf(va_arg(ap, char *));
 		//	else if (str[i + 1] == 'p')
 		//		//?
-		//	else if (str[i + 1] == 'd')
-		//		ft_putnbr(va_arg(ap, int));
+			else if (str[i] == 'd')
+				ft_putint_pf(va_arg(ap, int));
 			else if (str[i] == 'i')
-				ft_putint(va_arg(ap, int));
-		//	else if (str[i + 1] == 'u')
-		//		//?
+				ft_putint_pf(va_arg(ap, int));
+			else if (str[i] == 'u')
+				ft_putuint_pf(va_arg(ap, unsigned int));
 		//	else if (str[i + 1] == 'x')
 		//		//?
 		//	else if (str[i + 1] == 'X')
 		//		//?
-		//	esle if (str[i + 1] == '%')
-		//		write(1, '%', 1);
+			else if (str[i] == '%')
+				write(1, '%', 1);
 			else
 			{
 				write(2, "input error in ft_printf\n", 25);
@@ -86,9 +90,10 @@ int	ft_printf(const char *str, ...)
 			}
 		}
 		else
-			ft_putchar(str[i]);
+			ft_putchar_pf(str[i]);
 		i++;
 	}
+
 	va_end(ap);
 	return (0);
 }
@@ -97,11 +102,13 @@ int	ft_printf(const char *str, ...)
 
 int	main(void)
 {
+	int n1 = -2147483648;
+	unsigned int n2 = 4000000000;
+
 	printf("Mon printf:\n");
-	ft_printf("%i Hello %c %s World!", 42, 'q', "lol");
-	printf("\n");
+	ft_printf("%i Hello %c %s World! %d %u %%\n", 42, 'q', "lol", n1, n2);
 	printf("printf temoin:\n");
-	printf("%i Hello %c %s World!", 42, 'q', "lol");
+	printf("%i Hello %c %s World! %d %u\n %%", 42, 'q', "lol", n1, n2);
 	return (0);
 }
 /*
