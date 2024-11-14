@@ -18,7 +18,7 @@ static void	ft_putchar_pf(char c)
 	write(1, &c, 1);
 }
 
-static void  ft_putstr_pf(char *s)
+static void	ft_putstr_pf(char *s)
 {
 	if (s == NULL)
 		write(1, "null", 4);
@@ -29,7 +29,7 @@ static void  ft_putstr_pf(char *s)
 	}
 }
 
-static void	ft_putint_pf (int n)
+static void	ft_putint_pf(int n)
 {
 	if (n == -2147483648)
 	{
@@ -46,11 +46,86 @@ static void	ft_putint_pf (int n)
 	ft_putchar_pf((n % 10) + 48);
 }
 
-static void	ft_putuint_pf (unsigned int n)
+static void	ft_putuint_pf(unsigned int n)
 {
 	if (n > 9)
 		ft_putuint_pf(n / 10);
 	ft_putchar_pf((n % 10) + 48);
+}
+
+static void	ft_puthexamin_pf(unsigned int n)
+{
+	char	*str;
+
+	if (n == 0)
+	{
+		ft_putchar_pf('0');
+		return ;
+	}
+	str = "0123456789abcdef";
+	if (n < 0)
+	{
+		write(1, "-", 1);
+		n = -n;
+	}
+	if (n > 15)
+		ft_puthexamin_pf(n / 16);
+	ft_putchar_pf(str[n % 16]);
+}
+
+static void	ft_puthexamaj_pf(unsigned int n)
+{
+	char	*str;
+
+	if (n == 0)
+	{
+		ft_putchar_pf('0');
+		return ;
+	}
+	str = "0123456789ABCDEF";
+	if (n < 0)
+	{
+		write(1, "-", 1);
+		n = -n;
+	}
+	if (n > 15)
+		ft_puthexamaj_pf(n / 16);
+	ft_putchar_pf(str[n % 16]);
+}
+
+static void	ft_put_mem_address_pf(uintptr_t n)
+{
+	char	*str;
+
+	str = "0123456789abcdef";
+	if (n > 15)
+		ft_put_mem_address_pf(n / 16);
+	ft_putchar_pf(str[n % 16]);
+}
+
+static void	ft_parse_pf(char format, va_list *ap)
+{
+	if (format == 'c')
+		ft_putchar_pf((char) va_arg(*ap, int));
+	else if (format == 's')
+		ft_putstr_pf(va_arg(*ap, char *));
+	else if (format == 'p')
+	{
+		write(1, "0x", 2);
+		ft_put_mem_address_pf((uintptr_t) va_arg(*ap, void *));
+	}
+	else if (format == 'd')
+		ft_putint_pf(va_arg(*ap, int));
+	else if (format == 'i')
+		ft_putint_pf(va_arg(*ap, int));
+	else if (format == 'u')
+		ft_putuint_pf(va_arg(*ap, unsigned int));
+	else if (format == 'x')
+		ft_puthexamin_pf(va_arg(*ap, unsigned int));
+	else if (format == 'X')
+		ft_puthexamaj_pf(va_arg(*ap, unsigned int));
+	else if (format == '%')
+		write(1, "%", 1);
 }
 
 int	ft_printf(const char *str, ...)
@@ -65,35 +140,12 @@ int	ft_printf(const char *str, ...)
 		if (str[i] == '%')
 		{
 			i++;
-			if (str[i] == 'c')
-				ft_putchar_pf(va_arg(ap, int));
-			else if (str[i]  == 's')
-				ft_putstr_pf(va_arg(ap, char *));
-		//	else if (str[i + 1] == 'p')
-		//		//?
-			else if (str[i] == 'd')
-				ft_putint_pf(va_arg(ap, int));
-			else if (str[i] == 'i')
-				ft_putint_pf(va_arg(ap, int));
-			else if (str[i] == 'u')
-				ft_putuint_pf(va_arg(ap, unsigned int));
-		//	else if (str[i + 1] == 'x')
-		//		//?
-		//	else if (str[i + 1] == 'X')
-		//		//?
-			else if (str[i] == '%')
-				write(1, '%', 1);
-			else
-			{
-				write(2, "input error in ft_printf\n", 25);
-				return (0);
-			}
+			ft_parse_pf(str[i], &ap);
 		}
 		else
 			ft_putchar_pf(str[i]);
 		i++;
 	}
-
 	va_end(ap);
 	return (0);
 }
@@ -104,13 +156,21 @@ int	main(void)
 {
 	int n1 = -2147483648;
 	unsigned int n2 = 4000000000;
+	int n3 = 8945;
+	int	n4 = 8945;
 
-	printf("Mon printf:\n");
-	ft_printf("%i Hello %c %s World! %d %u %%\n", 42, 'q', "lol", n1, n2);
-	printf("printf temoin:\n");
-	printf("%i Hello %c %s World! %d %u\n %%", 42, 'q', "lol", n1, n2);
+	printf("Test of my ft_printf:\n");
+	ft_printf("%d, %u, %p \n", n1, n2, &n1);
+	printf("Witness:\n");
+	printf("%d, %u, %p \n", n1, n2, &n1);
+
+	printf("Test of my ft_printf:\n");
+	ft_printf("%p %i Hello %c %s World! %d %u %% %x %X \n", &n1, 42, 'q', "lol", n1, n2, n3, n4);
+	printf("Witness:\n");
+	printf("%p %i Hello %c %s World! %d %u %% %x %X \n", &n1, 42, 'q', "lol", n1, n2, n3, n4);
 	return (0);
 }
+
 /*
 Here are the requirements:
 • Don’t implement the buffer management of the original printf().
