@@ -6,12 +6,13 @@
 /*   By: chdonnat <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 09:09:26 by chdonnat          #+#    #+#             */
-/*   Updated: 2024/11/14 10:43:34 by chdonnat         ###   ########.fr       */
+/*   Updated: 2024/11/15 10:54:01 by chdonnat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "stdarg.h"
-#include "unistd.h"
+#include <stdarg.h>
+#include <stdint.h>
+#include <unistd.h>
 
 static void	ft_putchar_pf(char c, int *count)
 {
@@ -80,28 +81,35 @@ static void	ft_puthexamaj_pf(unsigned int n, int *count)
 	ft_putchar_pf(str[n % 16], count);
 }
 
-static void	ft_put_mem_address_pf(uintptr_t n, int *count)
+static void	ft_put_mem_address_pf(uintptr_t address, int *count)
 {
 	char	*str;
 
 	str = "0123456789abcdef";
-	if (n > 15)
-		ft_put_mem_address_pf(n / 16, count);
-	ft_putchar_pf(str[n % 16], count);
+	if (address > 15)
+		ft_put_mem_address_pf(address / 16, count);
+	ft_putchar_pf(str[address % 16], count);
 }
 
-static void	ft_parse_pf(char format, va_list *ap, int *count)
+static void	ft_check_address_pf(void *address, int *count)
+{
+	if (address == NULL)
+		ft_putstr_pf("(nil)", count);
+	else
+	{
+		ft_putstr_pf("0x", count);
+		ft_put_mem_address_pf((uintptr_t ) address, count);
+	}
+}
+
+static void	ft_switch_pf(char format, va_list *ap, int *count)
 {
 	if (format == 'c')
 		ft_putchar_pf((char) va_arg(*ap, int), count);
 	else if (format == 's')
 		ft_putstr_pf(va_arg(*ap, char *), count);
 	else if (format == 'p')
-	{
-		write(1, "0x", 2);
-		(*count) += 2;
-		ft_put_mem_address_pf((uintptr_t) va_arg(*ap, void *), count);
-	}
+		ft_check_address_pf(va_arg(*ap, void *), count);
 	else if (format == 'd')
 		ft_putint_pf(va_arg(*ap, int), count);
 	else if (format == 'i')
@@ -113,10 +121,21 @@ static void	ft_parse_pf(char format, va_list *ap, int *count)
 	else if (format == 'X')
 		ft_puthexamaj_pf(va_arg(*ap, unsigned int), count);
 	else if (format == '%')
+		ft_putchar_pf('%', count);
+}
+
+static int	ft_is_charset_pf(char c)
+{
+	char	*charset;
+
+	charset = "cspdiuxX%";
+	while (*charset)
 	{
-		write(1, "%", 1);
-		(*count)++;
+		if (c == *charset)
+			return (1);
+		charset++;
 	}
+	return (0);
 }
 
 int	ft_printf(const char *str, ...)
@@ -133,7 +152,13 @@ int	ft_printf(const char *str, ...)
 		if (str[i] == '%')
 		{
 			i++;
-			ft_parse_pf(str[i], &ap, &count);
+			if (ft_is_charset_pf(str[i]) == 0)
+			{
+				i--;
+				ft_putchar_pf(str[i], &count);
+			}
+			else
+				ft_switch_pf(str[i], &ap, &count);
 		}
 		else
 			ft_putchar_pf(str[i], &count);
@@ -142,7 +167,7 @@ int	ft_printf(const char *str, ...)
 	va_end(ap);
 	return (count);
 }
-/*
+
 #include <stdio.h>
 
 int	main(void)
@@ -153,45 +178,52 @@ int	main(void)
 	int	n4 = 8945;
 	int count;
 
-	printf("Test of my ft_printf:\n");
+	printf("Test of zeros:\n");
 	count = ft_printf("%d, %u, %x, %X \n", 0, 0, 0, 0);
-	printf("Le retour vaut: %d\n", count);
+	printf("Return: %d\n", count);
 	printf("Witness:\n");
 	count = printf("%d, %u, %x, %X \n", 0, 0, 0, 0);
-	printf("Le retour vaut: %d\n", count);
+	printf("Return: %d\n", count);
 	printf("\n");
 
 	printf("Test of my ft_printf:\n");
-	count = ft_printf("%d, %u, %p \n", n1, n2, &n1);
+	count = ft_printf("%% %d, %u, %p \n", n1, n2, &n1);
 	printf("Le retour vaut: %d\n", count);
 	printf("Witness:\n");
-	count = printf("%d, %u, %p \n", n1, n2, &n1);
+	count = printf("%% %d, %u, %p \n", n1, n2, &n1);
 	printf("Le retour vaut: %d\n", count);
 	printf("\n");
 
 	printf("Test avec des valeurs NULL et des entiers limites:\n");
 	printf("Test of my ft_printf:\n");
-	count = ft_printf("%s %d %u %x %X %p\n", (char *) /
-		NULL, n1, 0xFFFFFFFF, 0, 0, NULL);
+	count = ft_printf("%s %d %u %x %X %p\n", (char *) NULL, n1, 0xFFFFFFFF, 0, 0, NULL);
 	printf("Witness:\n");
 	printf("Le retour vaut: %d\n", count);
-	count = printf("%s %d %u %x %X %p\n", (char *) /
-		NULL, n1, 0xFFFFFFFF, 0, 0, NULL);
+	count = printf("%s %d %u %x %X %p\n", (char *) NULL, n1, 0xFFFFFFFF, 0, 0, NULL);
 	printf("Le retour vaut: %d\n", count);
 	printf("\n");
 
 	printf("Test avec des erreurs:\n");
 	ft_printf("Test of my ft_printf:\n");
-	count = ft_printf("% what? %. \n");
+	count = ft_printf("% what? %r \n");
 	printf("Le retour vaut: %d\n", count);
-//	printf("Witness:\n");
-//	count = printf("% what? %. \n");
-//	printf("Le retour vaut: %d\n", count);
+	printf("Witness:\n");
+	count = printf("% what? %r \n");
+	printf("Le retour vaut: %d\n", count);
 	printf("\n");
+
+	printf("Test avec des hexa:\n");
+	ft_printf("Test of my ft_printf:\n");
+	count = ft_printf("%x , %#x \n", 255, 255);
+	printf("Le retour vaut: %d\n", count);
+	printf("Witness:\n");
+	count = printf("%x , %#x \n", 255, 255);
+	printf("Le retour vaut: %d\n", count);
+
 
 	return (0);
 }
-*/
+
 /*
 Here are the requirements:
 • Don’t implement the buffer management of the original printf().
