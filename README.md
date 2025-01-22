@@ -1,4 +1,6 @@
 # PROJECT FT_PRINTF FOR 42
+By chdonnat (Christophe Donnat from 42 Perpignan, France)
+
 
 ## AIM OF THE PROJECT
 You will discover a popular and versatile C function: printf(). This exercise is a great
